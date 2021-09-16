@@ -1,0 +1,16 @@
+<nav class="navbar navbar-light">
+  <a class="navbar-brand" href="#"><span style="color:blue">Finance Tayle</span></a>
+  <nav class="my-2 my-md-0 mr-md-3">
+    <a class="p-2 text-dark" href="{% url 'all_accounts' %}">Все счета</a>
+    <a class="p-2 text-dark" href="{% url 'index' %}">Мои счета</a>
+
+    {% if user.is_authenticated %}
+      Пользователь: {{ user.username }}.
+      <a class="p-2 text-dark" href="{% url 'password_change' %}">Изменить пароль</a>
+      <a class="p-2 text-dark" href="{% url 'logout' %}?next={% url 'login' %}">Выйти</a>
+      {% else %}
+      <a class="p-2 text-dark" href="{% url 'login' %}">Войти</a> |
+      <a class="p-2 text-dark" href="{% url 'signup' %}">Регистрация</a>
+    {% endif %}
+  </nav>
+</nav>

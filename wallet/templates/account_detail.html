@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Мои счета{% endblock %}
+{% block content %}
+    <h2>Счет {{ account.id }} пользователя {{ user.username }}</h2>
+
+    <p>Здесь разместить детальную информацию о счете</p>
+    <p>balance: {{ account.balance }}</p>
+    <p>created: {{ account.created_date }}</p>
+{% endblock %}
