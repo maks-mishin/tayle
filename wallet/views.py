@@ -1,13 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
-from users.models import User
-from .forms import AccountForm
+from .forms import AccountForm, TransactionForm
 from .models import Account, Transaction
 
 
-# отображает список счетов пользователя
-# баланс - дата создания - кнопка удаления
+@login_required
 def my_accounts(request):
     accounts = Account.objects.filter(owner=request.user)
     form = AccountForm()
@@ -16,42 +14,53 @@ def my_accounts(request):
 
 def all_accounts(request):
     accounts = Account.objects.all()
-    return render(request, 'all_accounts.html', {'accounts': accounts})
+    form = TransactionForm()
+    return render(request, 'all_accounts.html', {'accounts': accounts, 'form': form})
 
 
+@login_required
 def account_detail(request, account_id: int):
     account = get_object_or_404(Account, id=account_id)
     return render(request, 'account_detail.html', {'account': account})
 
 
 # создание нового кошелька
-def create_wallet(request):
+@login_required
+def create_account(request):
     if request.method == 'POST':
         form = AccountForm(request.POST)
         if form.is_valid():
-            new_wallet = Account(owner=request.user, balance=float(request.POST.get('balance')))
+            new_wallet = Account(
+                owner=request.user,
+                title=request.POST.get('title'),
+                balance=float(request.POST.get('balance'))
+            )
             new_wallet.save()
             return redirect('index')
 
 
-# перевод денег другому пользователю
-# transfer_amount - сколько всего денег будет списано
-# recipient_id - получатель перевода
-def transaction(request, recipient_id: int, transfer_amount: float):
-    accounts_sender = Account.objects.filter(owner=request.user)
+@login_required
+def delete_account(request, account_id: int):
+    account = get_object_or_404(Account, id=account_id, owner=request.user)
+    account.delete()
+    return redirect('index')
 
-    # создаем объект модели транзакции каждый раз
-    Transaction.objects.create(sender_id=request.user.id, receiver_id=recipient_id)
 
-    amount_money = transfer_amount / len(accounts_sender)  # количество денег, которое будет списано с каждого счета
-    # пользователя
+@login_required
+def transfer(request):
+    form = TransactionForm(request.POST)
 
-    # списываем деньги равномерно со счетов пользователя
-    for account in accounts_sender:
-        account.balance -= amount_money
-        account.save()
+    if form.is_valid():
+        sender = request.user
+        receiver = request.POST.get('recipient')
+        value = request.POST.get('value')
 
-    # получатель
-    recipient = get_object_or_404(User, id=recipient_id)
+        new_transfer = Transaction(value=value, sender=sender, receiver=receiver)
+        new_transfer.save()
+        return redirect('index')
 
-    # отправляем деньги другому пользователю
+
+@login_required
+def all_transfers(request):
+    transfers = Transaction.objects.all()
+    return render(request, 'transfers.html', {"transfers": transfers})

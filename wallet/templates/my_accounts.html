@@ -3,7 +3,7 @@
 {% block content %}
     <h2>Счета пользователя {{ user.username }}</h2>
 
-    <button href="{% url 'create_wallet' %}" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#newAccountModal">
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#newAccountModal">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
         <path d="M8 0a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2H9v6a1 1 0 1 1-2 0V9H1a1 1 0 0 1 0-2h6V1a1 1 0 0 1 1-1z"/>
         </svg>
@@ -19,14 +19,20 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-              <form action="{% url "create_wallet"%}" method="post" enctype="multipart/form-data" class="d-flex btn-group">
-                {% csrf_token %}
-                <p>{{ form.non_field_errors }}</p>
+              <form action="{% url "create_account"%}" method="post" enctype="multipart/form-data" class="d-flex flex-column btn-group">
+                  {% csrf_token %}
+                  {{ form.non_field_errors }}
 
-                {{ form.docfile.errors }}
-                {{ form.balance }}
+                  {% if form.errors %}
+                      <p>{{ form.errors }}</p>
+                    {% endif %}
 
-                <button type="submit" class="btn btn-primary">Добавить</button>
+                    {{ form.title.label }}
+                    <p>{{ form.title }}</p>
+                    {{ form.balance.label }}
+                    <p>{{ form.balance }}</p>
+
+                <button type="submit" class="btn btn-primary" style="border-radius: .2rem">Добавить</button>
               </form>
           </div>
           <div class="modal-footer">
@@ -37,8 +43,11 @@
     </div>
     <!-- ./modal -->
 
-    {%  for account in accounts %}
+    {% for account in accounts %}
         <div class="document alert alert-primary d-flex justify-content-between align-items-center flex-wrap">
+            <h6 class="mb-0">
+                {{ account.title }}
+            </h6>
             <h6 class="mb-0">
                 <a href="{% url 'account_detail' account_id=account.id %}" class="text-dark text-decoration-none">
                     Баланс (в рублях): <span>{{ account.balance }}</span>
@@ -72,7 +81,7 @@
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
-                    <a href="#" class="btn btn-danger">Да</a>
+                    <a href="{% url 'delete_account' account_id=account.id %}" class="btn btn-danger">Да</a>
                   </div>
                 </div>
               </div>
